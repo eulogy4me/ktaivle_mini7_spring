@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+## API키가 써져있는  properties
+.properties

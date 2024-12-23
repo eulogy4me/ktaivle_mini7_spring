@@ -2,13 +2,9 @@ package com.aivle.mini7.client.api;
 
 
 import com.aivle.mini7.client.dto.FastApiResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.List;
 
 /**
  * FastApiClient

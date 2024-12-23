@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>응급 병원 추천 시스템</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Naver Maps API - clientId를 Thymeleaf 변수로 전달 -->
+    <script th:src="@{https://openapi.map.naver.com/openapi/v3/maps.js(ncpClientId=${naverClientId})}"></script>
+
     <!-- Custom CSS -->
     <style>
         body {
@@ -23,6 +26,13 @@
         .hospital-table th {
             background-color: #007bff;
             color: #ffffff;
+        }
+        #map {
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -64,8 +74,92 @@
             </tbody>
         </table>
     </div>
+
+    <!-- 네이버 지도 -->
+    <div id="map" style="width:100%;height:400px;margin:20px 0 60px 0;"></div>
 </div>
 
+<!-- Naver Map JS -->
+<script th:inline="javascript">
+    const navigationData = /*[[${navigationData}]]*/ null;
+
+    try {
+        const mapOptions = {
+            center: new naver.maps.LatLng(37.7383374, 127.0336131),
+            zoom: 13
+        };
+
+        const map = new naver.maps.Map('map', mapOptions);
+
+        const parsedData = typeof navigationData === 'string'
+            ? JSON.parse(navigationData)
+            : navigationData;
+
+        if (parsedData && parsedData.route && parsedData.route.traoptimal && parsedData.route.traoptimal[0].path) {
+            const pathCoords = parsedData.route.traoptimal[0].path.map(coord =>
+                new naver.maps.LatLng(coord[1], coord[0])
+            );
+
+            // 출발지 마커 (네이버 스타일)
+            new naver.maps.Marker({
+                position: pathCoords[0],
+                map: map,
+                icon: {
+                    content: `
+                        <div style="position:relative;">
+                            <div style="position:absolute;top:-42px;left:-13px;">
+                                <img src="https://ssl.pstatic.net/static/maps/m/pin_default.png" style="width:27px;height:42px;">
+                                <div style="position:absolute;top:6px;left:4px;width:19px;height:19px;background:#03c75a;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                    <span style="color:white;font-size:12px;font-weight:bold;">출</span>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    anchor: new naver.maps.Point(13, 42)
+                }
+            });
+
+            // 도착지 마커 (네이버 스타일)
+            new naver.maps.Marker({
+                position: pathCoords[pathCoords.length - 1],
+                map: map,
+                icon: {
+                    content: `
+                        <div style="position:relative;">
+                            <div style="position:absolute;top:-42px;left:-13px;">
+                                <img src="https://ssl.pstatic.net/static/maps/m/pin_default.png" style="width:27px;height:42px;">
+                                <div style="position:absolute;top:6px;left:4px;width:19px;height:19px;background:#f23d3d;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                    <span style="color:white;font-size:12px;font-weight:bold;">도</span>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    anchor: new naver.maps.Point(13, 42)
+                }
+            });
+
+            // 경로 그리기
+            const polyline = new naver.maps.Polyline({
+                path: pathCoords,
+                strokeColor: '#03c75a',  // 네이버 지도 기본 경로 색상
+                strokeWeight: 5,
+                strokeOpacity: 0.8,
+                map: map
+            });
+
+            // 경로가 모두 보이도록 지도 범위 조정
+            const bounds = pathCoords.reduce((bounds, latlng) =>
+                bounds.extend(latlng), new naver.maps.LatLngBounds()
+            );
+            map.fitBounds(bounds);
+
+        } else {
+            console.error('네비게이션 데이터가 올바르지 않습니다:', parsedData);
+        }
+    } catch (error) {
+        console.error('지도 초기화 중 오류 발생:', error);
+    }
+</script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
