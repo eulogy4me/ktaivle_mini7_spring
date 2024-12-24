@@ -34,14 +34,11 @@ public class FastAPIController {
             model.addAttribute("hospitals", response.getRecommendedHospitals());
 
             return "recommend_hospital"; // 추천 결과를 보여줄 HTML 파일 이름
-
         } catch (Exception e) {
             model.addAttribute("error", "FastAPI 호출 중 오류가 발생했습니다. " + e.getMessage());
             return "error"; // 오류 화면
         }
     }
-
-
 
 
     @GetMapping("/test-fastapi")
@@ -55,6 +52,7 @@ public class FastAPIController {
             return "FastAPI 호출 실패: " + e.getMessage();
         }
     }
+
 }
 
 
