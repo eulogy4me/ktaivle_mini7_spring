@@ -25,8 +25,17 @@ public class AdminController {
 
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/index");
-        Page<LogDto.ResponseInputList> Inputlog = logService.getLogList(pageable);
-        Page<LogDto.ResponseOutputList> Outputlog = logService.getLogList(pageable);
+
+        @GetMapping("/input")
+        public List<LogDto.ResponseInputList> getInputLogs() {
+            return logService.getInputLogs();
+        }
+
+        @GetMapping("/output")
+        public List<LogDto.ResponseOutputList> getOutputLogs() {
+            return logService.getOutputLogs();
+        }        
+        
         mv.addObject("Inputloglist", Inputlog);
         mv.addObject("Outputloglist", Outputlog);
         return mv;
