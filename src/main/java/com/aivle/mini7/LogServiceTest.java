@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.aivle.mini7.model.InputLog;
 import com.aivle.mini7.repository.InputLogRepository;
-import com.aivle.mini7.repository.OutputLogRepository;
+// import com.aivle.mini7.repository.OutputLogRepository;
 
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class LogServiceTest {
 
     private final InputLogRepository inputLogRepository;
-    private final OutputLogRepository outputLogRepository;
+    // private final OutputLogRepository outputLogRepository;
 
     public void testSaveAndRetrieve() {
         InputLog inputLog = new InputLog();
