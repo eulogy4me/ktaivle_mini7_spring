@@ -74,8 +74,6 @@ public class FastAPIController {
     }
 
 
-
-
     @GetMapping("/test-fastapi")
     public String testFastApi() {
         try {

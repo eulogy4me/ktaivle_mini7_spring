@@ -1,7 +1,11 @@
 package com.aivle.mini7.dto;
+
 import com.aivle.mini7.model.InputLog;
 import com.aivle.mini7.model.OutputLog;
 import lombok.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LogDto {
@@ -20,12 +24,41 @@ public class LogDto {
 
         public static LogDto.ResponseInputList of(InputLog log) {
             return ResponseInputList.builder()
-                .emClass(log.getEmClass())
-                .inputText(log.getInputText())
-                .datetime(log.getDatetime())
-                .inputLatitude(log.getInputLatitude())
-                .inputLongitude(log.getInputLongitude())
-                .build();
+                    .emClass(log.getEmClass())
+                    .inputText(log.getInputText())
+                    .datetime(log.getDatetime())
+                    .inputLatitude(log.getInputLatitude())
+                    .inputLongitude(log.getInputLongitude())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class HospitalInfo {
+        private String hospital;
+        private String addr;
+        private String tel;
+        private double haversineKm;
+        private double distanceKm;
+        private double latitude;
+        private double longitude;
+        private String emergencyType;
+
+        public static HospitalInfo of(OutputLog log) {
+            return HospitalInfo.builder()
+                    .hospital(log.getHospital())
+                    .addr(log.getAddr())
+                    .tel(log.getTel())
+                    .haversineKm(log.getHaversineKm())
+                    .distanceKm(log.getDistanceKm())
+                    .latitude(log.getLatitude())
+                    .longitude(log.getLongitude())
+                    .emergencyType(log.getEmergencyType())
+                    .build();
         }
     }
 
@@ -35,28 +68,15 @@ public class LogDto {
     @AllArgsConstructor
     @Builder
     public static class ResponseOutputList {
-        private String hospital1;
-        private String addr1;
-        private String tel1;
-        private String hospital2;
-        private String addr2;
-        private String tel2;
-        private String hospital3;
-        private String addr3;
-        private String tel3;
+        private List<HospitalInfo> hospitals;
 
-        public static LogDto.ResponseOutputList of(OutputLog log) {
+        public static LogDto.ResponseOutputList of(List<OutputLog> logs) {
+            List<HospitalInfo> hospitalInfos = logs.stream()
+                    .map(HospitalInfo::of)
+                    .collect(Collectors.toList());
             return ResponseOutputList.builder()
-            .hospital1(log.getHospital1())
-            .addr1(log.getAddr1())
-            .tel1(log.getTel1())
-            .hospital2(log.getHospital2())
-            .addr2(log.getAddr2())
-            .tel2(log.getTel2())
-            .hospital3(log.getHospital3())
-            .addr3(log.getAddr3())
-            .tel3(log.getTel3())
-            .build();
+                    .hospitals(hospitalInfos)
+                    .build();
         }
     }
 }

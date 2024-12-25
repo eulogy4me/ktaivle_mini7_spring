@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -34,16 +35,14 @@ public class LogService {
     @Transactional(readOnly = true)
     public Page<LogDto.ResponseOutputList> getOutputLogList(Pageable pageable) {
         Page<OutputLog> outputLogs = outputLogRepository.findAll(pageable);
-        return outputLogs.map(LogDto.ResponseOutputList::of);
+        return outputLogs.map(outputLog -> {
+            List<LogDto.HospitalInfo> hospitals = List.of(LogDto.HospitalInfo.of(outputLog));
+            return LogDto.ResponseOutputList.builder().hospitals(hospitals).build();
+        });
     }
 
-
-    @param responses
-    @param request
-    @param latitude
-    @param longitude
-    @param emClass
     public void saveLog(List<FastApiResponse> responses, String request, double latitude, double longitude, int emClass) {
+        // Save input log
         InputLog inputLog = InputLog.builder()
                 .inputText(request)
                 .inputLatitude(latitude)
@@ -54,32 +53,21 @@ public class LogService {
 
         inputLogRepository.save(inputLog);
 
-        OutputLog outputLog = new OutputLog();
-        int count = 1;
-
+        // Save output logs
         for (FastApiResponse response : responses) {
-            log.info("Hospital Response: {}", response);
+            for (FastApiResponse.HospitalResponse hospital : response.getRecommendedHospitals()) {
+                OutputLog outputLog = new OutputLog();
+                outputLog.setHospital(hospital.getHospitalName());
+                outputLog.setAddr(hospital.getAddress());
+                outputLog.setTel(hospital.getPhone1());
+                outputLog.setHaversineKm(hospital.getHaversineKm());
+                outputLog.setDistanceKm(hospital.getDistanceKm());
+                outputLog.setLatitude(hospital.getHospitalLatitude());
+                outputLog.setLongitude(hospital.getHospitalLongitude());
+                outputLog.setEmergencyType(hospital.getEmergencyType());
 
-            switch (count) {
-                case 1:
-                    outputLog.setHospital1(response.getHospitalName());
-                    outputLog.setAddr1(response.getAddress());
-                    outputLog.setTel1(response.getPhoneNumber1());
-                    break;
-                case 2:
-                    outputLog.setHospital2(response.getHospitalName());
-                    outputLog.setAddr2(response.getAddress());
-                    outputLog.setTel2(response.getPhoneNumber1());
-                    break;
-                case 3:
-                    outputLog.setHospital3(response.getHospitalName());
-                    outputLog.setAddr3(response.getAddress());
-                    outputLog.setTel3(response.getPhoneNumber1());
-                    break;
+                outputLogRepository.save(outputLog);
             }
-            count++;
         }
-
-        outputLogRepository.save(outputLog);
     }
 }

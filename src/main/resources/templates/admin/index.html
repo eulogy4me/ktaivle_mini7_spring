@@ -15,46 +15,45 @@
         <th>Latitude</th>
         <th>Longitude</th>
         <th>Emergency Class</th>
-        <th>Hospital 1</th>
-        <th>Address 1</th>
-        <th>Tel 1</th>
-        <th>Hospital 2</th>
-        <th>Address 2</th>
-        <th>Tel 2</th>
-        <th>Hospital 3</th>
-        <th>Address 3</th>
-        <th>Tel 3</th>
+        <th>Hospital</th>
+        <th>Address</th>
+        <th>Tel</th>
+        <th>Haversine KM</th>
+        <th>Distance KM</th>
+        <th>Hospital Latitude</th>
+        <th>Hospital Longitude</th>
+        <th>Emergency Type</th>
     </tr>
     </thead>
     <tbody>
     <!-- 데이터 반복 -->
-    <tr th:each="log, iterStat : ${logList.content}">
+    <tr th:each="log, iterStat : ${InputLogList.content}">
         <td th:text="${iterStat.index + 1}"></td>
         <td th:text="${log.inputText}"></td>
         <td th:text="${log.datetime}"></td>
         <td th:text="${log.inputLatitude}"></td>
         <td th:text="${log.inputLongitude}"></td>
         <td th:text="${log.emClass}"></td>
-        <td th:text="${log.hospital1}"></td>
-        <td th:text="${log.addr1}"></td>
-        <td th:text="${log.tel1}"></td>
-        <td th:text="${log.hospital2}"></td>
-        <td th:text="${log.addr2}"></td>
-        <td th:text="${log.tel2}"></td>
-        <td th:text="${log.hospital3}"></td>
-        <td th:text="${log.addr3}"></td>
-        <td th:text="${log.tel3}"></td>
+        <!-- 병원 데이터 반복 -->
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.hospital}"></td>
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.addr}"></td>
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.tel}"></td>
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.haversineKm}"></td>
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.distanceKm}"></td>
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.latitude}"></td>
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.longitude}"></td>
+        <td th:each="hospital : ${OutputLogList.content}" th:text="${hospital.emergencyType}"></td>
     </tr>
     </tbody>
 </table>
 
 <!-- 페이지네이션 -->
 <div>
-    <button th:if="${logList.hasPrevious()}"
-            th:href="@{/admin(page=${logList.number - 1})}">Previous</button>
-    <span th:text="${logList.number + 1} + '/' + ${logList.totalPages}"></span>
-    <button th:if="${logList.hasNext()}"
-            th:href="@{/admin(page=${logList.number + 1})}">Next</button>
+    <button th:if="${InputLogList.hasPrevious()}"
+            th:href="@{/admin(page=${InputLogList.number - 1})}">Previous</button>
+    <span th:text="${InputLogList.number + 1} + '/' + ${InputLogList.totalPages}"></span>
+    <button th:if="${InputLogList.hasNext()}"
+            th:href="@{/admin(page=${InputLogList.number + 1})}">Next</button>
 </div>
 </body>
 </html>

@@ -17,29 +17,26 @@ public class OutputLog {
     private Integer id;
 
     @Column(nullable = false)
-    private String hospital1;
+    private String hospital;
 
     @Column(nullable = false)
-    private String addr1;
+    private String addr;
 
     @Column(nullable = false)
-    private String tel1;
+    private String tel;
 
     @Column(nullable = false)
-    private String hospital2;
+    private double HaversineKm;
 
     @Column(nullable = false)
-    private String addr2;
+    private double DistanceKm;
 
     @Column(nullable = false)
-    private String tel2;
+    private double Latitude;
 
     @Column(nullable = false)
-    private String hospital3;
+    private double Longitude;
 
     @Column(nullable = false)
-    private String addr3;
-
-    @Column(nullable = false)
-    private String tel3;
+    private String EmergencyType;
 }

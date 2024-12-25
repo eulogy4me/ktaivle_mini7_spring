@@ -19,25 +19,18 @@ public class AdminController {
 
     private final LogService logService;
 
-//     pageable default value
+    // Admin 메인 페이지
     @GetMapping("")
     public ModelAndView index(Pageable pageable) {
-
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/index");
 
-        @GetMapping("/input")
-        public List<LogDto.ResponseInputList> getInputLogs() {
-            return logService.getInputLogs();
-        }
+        Page<LogDto.ResponseInputList> inputLogs = logService.getInputLogList(pageable);
+        Page<LogDto.ResponseOutputList> outputLogs = logService.getOutputLogList(pageable);
 
-        @GetMapping("/output")
-        public List<LogDto.ResponseOutputList> getOutputLogs() {
-            return logService.getOutputLogs();
-        }        
-        
-        mv.addObject("Inputloglist", Inputlog);
-        mv.addObject("Outputloglist", Outputlog);
+        mv.addObject("InputLogList", inputLogs);
+        mv.addObject("OutputLogList", outputLogs);
+
         return mv;
     }
 }
