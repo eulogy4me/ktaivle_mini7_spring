@@ -6,6 +6,7 @@
     <title>응급 병원 추천 시스템</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <!-- Naver Maps API - clientId를 Thymeleaf 변수로 전달 -->
     <script th:src="@{https://openapi.map.naver.com/openapi/v3/maps.js(ncpClientId=${naverClientId})}"></script>
 
@@ -27,7 +28,8 @@
             background-color: #007bff;
             color: #ffffff;
         }
-        #map {
+
+        #map= {
             width: 100%;
             height: 400px;
             margin: 20px 0;
@@ -55,6 +57,7 @@
     <!-- 병원 리스트 -->
     <div class="mt-5">
         <h2>추천 병원 리스트</h2>
+        <!-- 병원 리스트 테이블 수정 -->
         <table class="table table-striped table-hover hospital-table">
             <thead>
             <tr>
@@ -65,7 +68,11 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="hospital : ${hospitals}">
+            <tr th:each="hospital, stat : ${hospitals}"
+                th:data-lat="${hospital.hospitalLatitude}"
+                th:data-lng="${hospital.hospitalLongitude}"
+                th:onclick="'updateRoute(' + ${hospital.hospitalLatitude} + ',' + ${hospital.hospitalLongitude} + ')'"
+                style="cursor: pointer">
                 <td th:text="${hospital.hospitalName}"></td>
                 <td th:text="${hospital.address}"></td>
                 <td th:text="${hospital.distanceKm}"></td>
@@ -74,74 +81,70 @@
             </tbody>
         </table>
     </div>
+</div>
 
     <!-- 네이버 지도 -->
     <div id="map" style="width:100%;height:400px;margin:20px 0 60px 0;"></div>
 </div>
 
-<!-- Naver Map JS -->
+<!-- 지도 스크립트 수정 -->
 <script th:inline="javascript">
+    let map, currentPolyline, startMarker, endMarker;
+    const userLat = /*[[${userLatitude}]]*/ 0;
+    const userLng = /*[[${userLongitude}]]*/ 0;
     const navigationData = /*[[${navigationData}]]*/ null;
 
-    try {
+    function initMap() {
         const mapOptions = {
-            center: new naver.maps.LatLng(37.7383374, 127.0336131),
+            center: new naver.maps.LatLng(userLat, userLng),
             zoom: 13
         };
+        map = new naver.maps.Map('map', mapOptions);
+        displayInitialRoute();
+    }
 
-        const map = new naver.maps.Map('map', mapOptions);
+    function createMarker(position, isStart) {
+        return new naver.maps.Marker({
+            position: position,
+            map: map,
+            icon: {
+                content: `
+                    <div style="position:relative;">
+                        <div style="position:absolute;top:-42px;left:-13px;">
+                            <img src="https://ssl.pstatic.net/static/maps/m/pin_default.png" style="width:27px;height:42px;">
+                            <div style="position:absolute;top:6px;left:4px;width:19px;height:19px;background:${isStart ? '#03c75a' : '#f23d3d'};border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                <span style="color:white;font-size:12px;font-weight:bold;">${isStart ? '출' : '도'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                anchor: new naver.maps.Point(13.5, 42) // 정확한 중심 위치로 조정
+            }
+        });
+    }
 
-        const parsedData = typeof navigationData === 'string'
-            ? JSON.parse(navigationData)
-            : navigationData;
+    async function updateRoute(hospitalLat, hospitalLng) {
+        try {
+            const response = await fetch(`/api/navigation?fromLat=${userLat}&fromLng=${userLng}&toLat=${hospitalLat}&toLng=${hospitalLng}`);
+            const newNavigationData = await response.json();
 
-        if (parsedData && parsedData.route && parsedData.route.traoptimal && parsedData.route.traoptimal[0].path) {
-            const pathCoords = parsedData.route.traoptimal[0].path.map(coord =>
+            // 기존 경로와 마커 제거
+            if (currentPolyline) currentPolyline.setMap(null);
+            if (startMarker) startMarker.setMap(null);
+            if (endMarker) endMarker.setMap(null);
+
+            const pathCoords = newNavigationData.route.traoptimal[0].path.map(coord =>
                 new naver.maps.LatLng(coord[1], coord[0])
             );
 
-            // 출발지 마커 (네이버 스타일)
-            new naver.maps.Marker({
-                position: pathCoords[0],
-                map: map,
-                icon: {
-                    content: `
-                        <div style="position:relative;">
-                            <div style="position:absolute;top:-42px;left:-13px;">
-                                <img src="https://ssl.pstatic.net/static/maps/m/pin_default.png" style="width:27px;height:42px;">
-                                <div style="position:absolute;top:6px;left:4px;width:19px;height:19px;background:#03c75a;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                    <span style="color:white;font-size:12px;font-weight:bold;">출</span>
-                                </div>
-                            </div>
-                        </div>
-                    `,
-                    anchor: new naver.maps.Point(13, 42)
-                }
-            });
+            // 새 마커 생성
+            startMarker = createMarker(pathCoords[0], true);
+            endMarker = createMarker(pathCoords[pathCoords.length - 1], false);
 
-            // 도착지 마커 (네이버 스타일)
-            new naver.maps.Marker({
-                position: pathCoords[pathCoords.length - 1],
-                map: map,
-                icon: {
-                    content: `
-                        <div style="position:relative;">
-                            <div style="position:absolute;top:-42px;left:-13px;">
-                                <img src="https://ssl.pstatic.net/static/maps/m/pin_default.png" style="width:27px;height:42px;">
-                                <div style="position:absolute;top:6px;left:4px;width:19px;height:19px;background:#f23d3d;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                    <span style="color:white;font-size:12px;font-weight:bold;">도</span>
-                                </div>
-                            </div>
-                        </div>
-                    `,
-                    anchor: new naver.maps.Point(13, 42)
-                }
-            });
-
-            // 경로 그리기
-            const polyline = new naver.maps.Polyline({
+            // 새 경로 그리기
+            currentPolyline = new naver.maps.Polyline({
                 path: pathCoords,
-                strokeColor: '#03c75a',  // 네이버 지도 기본 경로 색상
+                strokeColor: '#03c75a',
                 strokeWeight: 5,
                 strokeOpacity: 0.8,
                 map: map
@@ -151,14 +154,42 @@
             const bounds = pathCoords.reduce((bounds, latlng) =>
                 bounds.extend(latlng), new naver.maps.LatLngBounds()
             );
-            map.fitBounds(bounds);
-
-        } else {
-            console.error('네비게이션 데이터가 올바르지 않습니다:', parsedData);
+            map.fitBounds(bounds, { top: 50, bottom: 50, left: 50, right: 50 });
+        } catch (error) {
+            console.error('경로 업데이트 중 오류 발생:', error);
         }
-    } catch (error) {
-        console.error('지도 초기화 중 오류 발생:', error);
     }
+
+    function displayInitialRoute() {
+        const parsedData = typeof navigationData === 'string'
+            ? JSON.parse(navigationData)
+            : navigationData;
+
+        if (parsedData?.route?.traoptimal?.[0]?.path) {
+            const pathCoords = parsedData.route.traoptimal[0].path.map(coord =>
+                new naver.maps.LatLng(coord[1], coord[0])
+            );
+
+            startMarker = createMarker(pathCoords[0], true);
+            endMarker = createMarker(pathCoords[pathCoords.length - 1], false);
+
+            currentPolyline = new naver.maps.Polyline({
+                path: pathCoords,
+                strokeColor: '#03c75a',
+                strokeWeight: 5,
+                strokeOpacity: 0.8,
+                map: map
+            });
+
+            const bounds = pathCoords.reduce((bounds, latlng) =>
+                bounds.extend(latlng), new naver.maps.LatLngBounds()
+            );
+            map.fitBounds(bounds);
+        }
+    }
+
+    // 지도 초기화
+    window.addEventListener('load', initMap);
 </script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

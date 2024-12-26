@@ -1,0 +1,18 @@
+# 버전 관리 시스템 관련
+.git
+.gitignore
+
+# 환경 설정 및 민감한 정보
+.env
+*.env
+*.properties
+
+# 개발 환경 관련
+node_modules
+*.log
+build
+target
+
+# IDE 설정
+.idea
+.vscode

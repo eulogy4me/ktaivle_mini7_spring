@@ -20,13 +20,13 @@ public class NavigationController {
 
     @GetMapping
     public ResponseEntity<String> getNavigation(
-            @RequestParam("startLat") double startLat,
-            @RequestParam("startLng") double startLng,
-            @RequestParam("endLat") double endLat,
-            @RequestParam("endLng") double endLng) {
+            @RequestParam("fromLat") double fromLat,
+            @RequestParam("fromLng") double fromLng,
+            @RequestParam("toLat") double toLat,
+            @RequestParam("toLng") double toLng) {
         try {
             String navigationData = navigationService.getNavigationData(
-                    startLat, startLng, endLat, endLng);
+                    fromLat, fromLng, toLat, toLng);
             return ResponseEntity.ok(navigationData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

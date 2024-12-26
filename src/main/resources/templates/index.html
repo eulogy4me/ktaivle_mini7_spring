@@ -17,6 +17,8 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
         }
         .loading-overlay {
             position: fixed;
@@ -26,10 +28,14 @@
             height: 100%;
             background-color: rgba(255, 255, 255, 0.8);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             visibility: hidden;
+        }
+        .btn-check:checked + .btn-outline-primary {
+            font-weight: bold;
         }
     </style>
 </head>
@@ -37,7 +43,18 @@
 <div class="container d-flex justify-content-center">
     <div class="form-container">
         <h1 class="text-center mb-4">응급 병원 추천 시스템</h1>
-        <form action="/recommend_hospital" method="get" enctype="application/x-www-form-urlencoded" onsubmit="showLoading()">
+
+        <!-- 입력 방식 토글 버튼 -->
+        <div class="btn-group w-100 mb-4" role="group">
+            <input type="radio" class="btn-check" name="inputType" id="audioInput" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="audioInput">음성 입력</label>
+
+            <input type="radio" class="btn-check" name="inputType" id="textInput" autocomplete="off">
+            <label class="btn btn-outline-primary" for="textInput">텍스트/좌표 입력</label>
+        </div>
+
+        <!-- 오디오 입력 폼 -->
+        <form id="audioForm" action="/recommend_hospital" method="get" enctype="application/x-www-form-urlencoded" onsubmit="showLoading()">
             <div class="mb-3">
                 <label for="filename" class="form-label">오디오 파일 이름</label>
                 <input type="text" id="filename" name="filename" class="form-control" placeholder="파일 이름을 입력하세요" required>
@@ -46,6 +63,31 @@
             <div class="mb-3">
                 <label for="hospitalCount" class="form-label">추천 병원 개수</label>
                 <input type="number" id="hospitalCount" name="hospitalCount" class="form-control" placeholder="추천 병원 개수를 입력하세요" required min="1" max="10">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">추천 병원 조회</button>
+        </form>
+
+        <!-- 텍스트/좌표 입력 폼 -->
+        <form id="textForm" action="/recommend_hospital" method="get" enctype="application/x-www-form-urlencoded" onsubmit="showLoading()" style="display: none;">
+            <div class="mb-3">
+                <label for="summary" class="form-label">증상 요약</label>
+                <textarea id="summary" name="summary" class="form-control" rows="3" placeholder="증상을 간단히 설명해주세요" required></textarea>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="latitude" class="form-label">위도</label>
+                    <input type="number" id="latitude" name="latitude" class="form-control" placeholder="위도" required step="any">
+                </div>
+                <div class="col">
+                    <label for="longitude" class="form-label">경도</label>
+                    <input type="number" id="longitude" name="longitude" class="form-control" placeholder="경도" required step="any">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="hospitalCount2" class="form-label">추천 병원 개수</label>
+                <input type="number" id="hospitalCount2" name="hospitalCount" class="form-control" placeholder="추천 병원 개수를 입력하세요" required min="1" max="10">
             </div>
             <button type="submit" class="btn btn-primary w-100">추천 병원 조회</button>
         </form>
@@ -67,6 +109,17 @@
         const loadingOverlay = document.getElementById('loading-overlay');
         loadingOverlay.style.visibility = 'visible';
     }
+
+    // 토글 버튼 이벤트 리스너
+    document.getElementById('audioInput').addEventListener('change', function() {
+        document.getElementById('audioForm').style.display = 'block';
+        document.getElementById('textForm').style.display = 'none';
+    });
+
+    document.getElementById('textInput').addEventListener('change', function() {
+        document.getElementById('audioForm').style.display = 'none';
+        document.getElementById('textForm').style.display = 'block';
+    });
 </script>
 </body>
 </html>
